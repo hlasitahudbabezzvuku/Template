@@ -85,10 +85,27 @@ log::trace ()
     unset dep
 }
 
+#############
+### Build ###
+#############
+
+build::clean ()
+{
+    if [[ -f "${OUT}" ]]; then
+        rm "${OUT}"
+    else
+        log::info "Nothing to clean"
+    fi
+}
+
 
 ############
 ### Main ###
 ############
+
+declare -rA OPTIONS=(
+    ["clean"]="build::clean"
+)
 
 main::main ()
 {
@@ -155,6 +172,16 @@ main::main ()
                 break
             fi
         done
+    fi
+
+    if [[ -n "${option:-}" ]]; then
+        if [[ -v OPTIONS[${option}] ]]; then
+            "${OPTIONS[${option}]}"
+        else
+            log::error "Invalid option: ${option}."
+        fi
+    else
+        log::error "No option provided. Please specify one of: ${!OPTIONS[*]}"
     fi
 }
 
