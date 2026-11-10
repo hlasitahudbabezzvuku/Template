@@ -27,6 +27,15 @@ declare -ar COMPILERS=(
     "clang++"
 )
 
+declare -ar FLAGS=(
+    "-std=c23"
+    "-Wall"
+    "-Wextra"
+    "-pedantic"
+    "-lm"
+    "-g"
+)
+
 
 ###########
 ### Log ###
