@@ -117,58 +117,59 @@ build::clean ()
 ### Main ###
 ############
 
-main::main ()
+main::args ()
 {
-    printf 'Build template version %s\n' "${CONF_VERSION}"
-
     for (( i = 1; i - 1 < "${#}"; i++ )); do
         case "${!i}" in
-            '--version')
-                printf 'Bash version %s\n' "${BASH_VERSINFO[*]}"
-                exit 0
-                ;;
             '--help')
                 # TODO
+                exit 0
                 ;;
+
+            '--version')
+                printf 'Build template version %s\n' "${CONF_VERSION}"
+                printf 'Bash version %s\n' "${BASH_VERSION}"
+                exit 0
+                ;;
+
             '--nocolor')
                 declare -g CONF_NOCOLOR="true"
                 ;;
+
             '--in' | '-I')
                 _="$(( i++ ))"
                 config[in]="${!i}"
                 log::info "Using '${config[in]}' as input file"
                 ;;
+
             '--out' | '-O')
                 _="$(( i++ ))"
                 config[out]="${!i}"
                 log::info "Using '${config[out]}' as output file"
                 ;;
+
             '--cc' | '-C')
                 _="$(( i++ ))"
                 config[cc]="${!i}"
                 log::info "Using '${config[cc]}' as compiler command"
                 ;;
+
             '--cflags' | '-F')
                 _="$(( i++ ))"
-
                 IFS="," read -ra cflags <<< "${!i}"
                 config[cflagsc]="${#cflags[@]}"
-
                 for (( j = 0; j < config[cflagsc]; j++ )); do
                     config[clflags,${j}]="${cflags[${j}]}"
                 done
-
                 log::info "Using custom CFLAGS"
                 ;;
+
             '--cflags-append' | '-A')
                 _="$(( i++ ))"
-
                 IFS="," read -ra cflags <<< "${!i}"
-
                 for (( j = 0; j < ${#cflags[@]}; j++ )); do
                     config[clflags,$(( config[cflagsc] + 1 + j ))]="${cflags[${j}]}"
                 done
-
                 config[cflagsc]+="${#cflags[@]}"
                 log::info "Appending custom CFLAGS"
                 ;;
@@ -180,6 +181,12 @@ main::main ()
                 ;;
         esac
     done
+
+}
+
+main::main ()
+{
+    main::args "${@}"
 
     if [[ -z "${config[out]}" ]]; then
         config[out]="${config[in]%\.c}"
