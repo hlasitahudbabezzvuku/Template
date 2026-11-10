@@ -15,19 +15,15 @@ fi
 declare -r CONF_VERSION="0.1.0"
 declare -g CONF_NOCOLOR=false
 
-declare CC
-declare CFLAGS
-declare IN="main.c"
-declare OUT
-
-declare -ar COMPILERS=(
+declare -ra CONF_COMPILERS=(
     "gcc"
     "clang"
     "g++"
     "clang++"
+    "cc"
 )
 
-declare -ar FLAGS=(
+declare -ra CONF_FLAGS=(
     "-std=c23"
     "-Wall"
     "-Wextra"
@@ -35,6 +31,11 @@ declare -ar FLAGS=(
     "-lm"
     "-g"
 )
+
+declare IN="main.c"
+declare OUT
+declare CC
+declare CFLAGS="${CONF_FLAGS[*]}"
 
 
 ###########
@@ -93,22 +94,49 @@ main::main ()
 {
     printf 'Build template version %s\n' "${CONF_VERSION}"
 
+    declare option
+
     for (( i = 1; i - 1 < "${#}"; i++ )); do
         case "${!i}" in
-            '--version' | '-v')
+            '--version')
                 printf 'Bash version %s\n' "${BASH_VERSINFO[*]}"
                 exit 0
+                ;;
+            '--help')
+                # TODO
                 ;;
             '--nocolor')
                 declare -g CONF_NOCOLOR="true"
                 ;;
-            '--compiler' | '--cc')
+            '--in' | '-I')
+                _="$(( i++ ))"
+                IN="${!i}"
+                log::info "Using '${IN}' as input file"
+                ;;
+            '--out' | '-O')
+                _="$(( i++ ))"
+                OUT="${!i}"
+                log::info "Using '${OUT}' as output file"
+                ;;
+            '--cc' | '-C')
                 _="$(( i++ ))"
                 CC="${!i}"
-                log::info "Using ${CC} as compiler command"
+                log::info "Using '${CC}' as compiler command"
                 ;;
-            '--help')
-                # TODO
+            '--cflags' | '-F')
+                _="$(( i++ ))"
+                IFS="," read -ra cflags <<< "${!i}"
+                CFLAGS="${cflags[*]}"
+                log::info "Using '${CFLAGS[*]}' as compiler flags"
+                ;;
+            '--cflags-append' | '-A')
+                _="$(( i++ ))"
+                IFS="," read -ra cflags <<< "${!i}"
+                CFLAGS+="${cflags[*]}"
+                log::info "Using '${CFLAGS[*]}' as compiler flags"
+                ;;
+            '--'*)
+                option="${!i/'--'}"
                 ;;
             *)
                 log::error "Unknown option ${!i}"
@@ -116,8 +144,12 @@ main::main ()
         esac
     done
 
-    if [[ -z ${CC+x} ]]; then
-        for compiler in "${COMPILERS[@]}"; do
+    if [[ -z "${OUT+set}" ]]; then
+        OUT="${IN%\.c}"
+    fi
+
+    if [[ -z "${CC+set}" ]]; then
+        for compiler in "${CONF_COMPILERS[@]}"; do
             if type -p "${compiler}" &>/dev/null; then
                 CC="${compiler}"
                 break
