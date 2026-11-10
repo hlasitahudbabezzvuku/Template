@@ -34,6 +34,7 @@ declare -ra CONF_FLAGS=(
 
 declare -A options=(
     ["clean"]=false
+    ["config"]=false
     ["run"]=false
     ["test"]=false
     ["valgrind"]=false
@@ -48,7 +49,7 @@ declare -A config=(
 )
 
 for (( i = 0; i < "${config[cflagsc]}"; i++ )); do
-    config[clflags,${i}]="${CONF_FLAGS[${i}]}"
+    config[cflags,${i}]="${CONF_FLAGS[${i}]}"
 done
 
 
@@ -159,7 +160,7 @@ main::args ()
                 IFS="," read -ra cflags <<< "${!i}"
                 config[cflagsc]="${#cflags[@]}"
                 for (( j = 0; j < config[cflagsc]; j++ )); do
-                    config[clflags,${j}]="${cflags[${j}]}"
+                    config[cflags,${i}]="${cflags[${i}]}"
                 done
                 log::info "Using custom CFLAGS"
                 ;;
@@ -168,7 +169,7 @@ main::args ()
                 _="$(( i++ ))"
                 IFS="," read -ra cflags <<< "${!i}"
                 for (( j = 0; j < ${#cflags[@]}; j++ )); do
-                    config[clflags,$(( config[cflagsc] + 1 + j ))]="${cflags[${j}]}"
+                    config[cflags,$(( config[cflagsc] + 1 + i ))]="${cflags[${i}]}"
                 done
                 config[cflagsc]+="${#cflags[@]}"
                 log::info "Appending custom CFLAGS"
@@ -201,9 +202,18 @@ main::main ()
         done
     fi
 
-    for i in "${!config[@]}"; do
-        echo -e "config[$i]:\t${config[$i]}"
-    done
+    if ${options[config]}; then
+        for i in "${!config[@]}"; do
+            if [[ ! "${i}" =~ "cflags" ]]; then
+                printf "CONFIG[%s]:\t%s\n" "${i}" "${config[$i]}"
+            fi
+        done
+        printf "CONFIG[cflags]:\t"
+        for (( i = 0; i < config[cflagsc]; i++ )); do
+            printf "%s " "${config[cflags,${i}]}"
+        done
+        printf "\n"
+    fi
 }
 
 main::main "${@}"
