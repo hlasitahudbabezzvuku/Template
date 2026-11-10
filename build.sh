@@ -14,7 +14,11 @@ fi
 
 declare -r CONF_VERSION="0.1.0"
 declare -g CONF_NOCOLOR=false
+
 declare CC
+declare CFLAGS
+declare IN="main.c"
+declare OUT
 
 declare -ar COMPILERS=(
     "gcc"
@@ -88,6 +92,11 @@ main::main ()
                 ;;
             '--nocolor')
                 declare -g CONF_NOCOLOR="true"
+                ;;
+            '--compiler' | '--cc')
+                _="$(( i++ ))"
+                CC="${!i}"
+                log::info "Using ${CC} as compiler command"
                 ;;
             '--help')
                 # TODO
