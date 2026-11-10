@@ -32,6 +32,14 @@ declare -ra CONF_FLAGS=(
     "-g"
 )
 
+declare -A options=(
+    ["clean"]=false
+    ["run"]=false
+    ["test"]=false
+    ["valgrind"]=false
+    ["watch"]=false
+)
+
 declare -A config=(
     ["in"]="main.c"
     ["out"]=""
@@ -168,7 +176,7 @@ main::main ()
                 # TODO
                 ;;
             *)
-                log::error "Unknown option ${!i}"
+                log::error "Unknown command '${!i}'"
                 ;;
         esac
     done
