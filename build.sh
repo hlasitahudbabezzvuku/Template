@@ -32,10 +32,12 @@ declare -ra CONF_FLAGS=(
     "-g"
 )
 
-declare IN="main.c"
-declare OUT
-declare CC
-declare CFLAGS="${CONF_FLAGS[*]}"
+declare -A config=(
+    ["in"]="main.c"
+    ["out"]=""
+    ["cc"]=""
+    ["cflags"]="${CONF_FLAGS// /,}"
+)
 
 
 ###########
@@ -91,8 +93,8 @@ log::trace ()
 
 build::clean ()
 {
-    if [[ -f "${OUT}" ]]; then
-        rm "${OUT}"
+    if [[ -f "${config[out]}" ]]; then
+        rm "${config[out]}"
     else
         log::info "Nothing to clean"
     fi
@@ -103,15 +105,9 @@ build::clean ()
 ### Main ###
 ############
 
-declare -rA OPTIONS=(
-    ["clean"]="build::clean"
-)
-
 main::main ()
 {
     printf 'Build template version %s\n' "${CONF_VERSION}"
-
-    declare option
 
     for (( i = 1; i - 1 < "${#}"; i++ )); do
         case "${!i}" in
@@ -127,33 +123,31 @@ main::main ()
                 ;;
             '--in' | '-I')
                 _="$(( i++ ))"
-                IN="${!i}"
-                log::info "Using '${IN}' as input file"
+                config[in]="${!i}"
+                log::info "Using '${config[in]}' as input file"
                 ;;
             '--out' | '-O')
                 _="$(( i++ ))"
-                OUT="${!i}"
-                log::info "Using '${OUT}' as output file"
+                config[out]="${!i}"
+                log::info "Using '${config[out]}' as output file"
                 ;;
             '--cc' | '-C')
                 _="$(( i++ ))"
-                CC="${!i}"
-                log::info "Using '${CC}' as compiler command"
+                config[cc]="${!i}"
+                log::info "Using '${config[cc]}' as compiler command"
                 ;;
             '--cflags' | '-F')
                 _="$(( i++ ))"
-                IFS="," read -ra cflags <<< "${!i}"
-                CFLAGS="${cflags[*]}"
-                log::info "Using '${CFLAGS[*]}' as compiler flags"
+                config[cflags]="${!i}"
+                log::info "Using '${config[cflags]//,/ }' as compiler flags"
                 ;;
             '--cflags-append' | '-A')
                 _="$(( i++ ))"
-                IFS="," read -ra cflags <<< "${!i}"
-                CFLAGS+="${cflags[*]}"
-                log::info "Using '${CFLAGS[*]}' as compiler flags"
+                config[cflags]+=",${!i}"
+                log::info "Using '${config[cflags]//,/ }' as compiler flags"
                 ;;
             '--'*)
-                option="${!i/'--'}"
+                # TODO
                 ;;
             *)
                 log::error "Unknown option ${!i}"
@@ -161,28 +155,22 @@ main::main ()
         esac
     done
 
-    if [[ -z "${OUT+set}" ]]; then
-        OUT="${IN%\.c}"
+    if [[ -z "${config[out]}" ]]; then
+        config[out]="${config[in]%\.c}"
     fi
 
-    if [[ -z "${CC+set}" ]]; then
+    if [[ -z "${config[cc]}" ]]; then
         for compiler in "${CONF_COMPILERS[@]}"; do
             if type -p "${compiler}" &>/dev/null; then
-                CC="${compiler}"
+                config[cc]="${compiler}"
                 break
             fi
         done
     fi
 
-    if [[ -n "${option:-}" ]]; then
-        if [[ -v OPTIONS[${option}] ]]; then
-            "${OPTIONS[${option}]}"
-        else
-            log::error "Invalid option: ${option}."
-        fi
-    else
-        log::error "No option provided. Please specify one of: ${!OPTIONS[*]}"
-    fi
+    for i in "${!config[@]}"; do
+        echo -e "config[$i]:\t${config[$i]}"
+    done
 }
 
 main::main "${@}"
