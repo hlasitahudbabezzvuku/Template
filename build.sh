@@ -110,6 +110,29 @@ log::trace ()
 ### Build ###
 #############
 
+build::config ()
+{
+    declare string
+
+    string="config=( "
+    for i in "${!config[@]}"; do
+        if [[ ! "${i}" =~ "cflags" ]]; then
+            string+="[\"${i}\"]=\"${config[${i}]}\" "
+        fi
+    done
+    string+=")"
+
+    log::info "${string}"
+
+    string="config[cflags]=( "
+    for (( i = 0; i < config[cflagsc]; i++ )); do
+        string+="\"${config[cflags,${i}]}\" "
+    done
+    string+=")"
+
+    log::info "${string}"
+}
+
 build::run ()
 {
     declare cmd="${PWD}/${config[out]}"
@@ -213,6 +236,10 @@ main::args ()
 
 main::build ()
 {
+    if ${options[config]}; then
+        build::config
+    fi
+
     if ${options[run]} || ${options[valgrind]}; then
         build::run
     fi
@@ -237,19 +264,6 @@ main::main ()
                 break
             fi
         done
-    fi
-
-    if ${options[config]}; then
-        for i in "${!config[@]}"; do
-            if [[ ! "${i}" =~ "cflags" ]]; then
-                printf "CONFIG[%s]:\t%s\n" "${i}" "${config[$i]}"
-            fi
-        done
-        printf "CONFIG[cflags]:\t"
-        for (( i = 0; i < config[cflagsc]; i++ )); do
-            printf "%s " "${config[cflags,${i}]}"
-        done
-        printf "\n"
     fi
 
     main::build
