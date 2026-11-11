@@ -133,6 +133,23 @@ build::config ()
     log::info "${string}"
 }
 
+build::compile ()
+{
+    declare -a args
+
+    log::info "Compiling..."
+
+    for (( i = 0; i < "${config[cflagsc]}"; i++ )); do
+        args+=( "${config[cflags,${i}]}" )
+    done
+
+    if "${config[cc]}" "${config[in]}" "-o" "${config[out]}" "${args[@]}"; then
+        log::info "Compilation finished"
+    else
+        log::error "Compilation failed"
+    fi
+}
+
 build::run ()
 {
     declare cmd="${PWD}/${config[out]}"
@@ -239,6 +256,8 @@ main::build ()
     if ${options[config]}; then
         build::config
     fi
+
+    build::compile
 
     if ${options[run]} || ${options[valgrind]}; then
         build::run
