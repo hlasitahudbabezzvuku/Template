@@ -110,18 +110,6 @@ log::trace ()
 ### Build ###
 #############
 
-build::clean ()
-{
-    log::info "Cleaning up..."
-
-    if [[ -f "${config[out]}" ]]; then
-        rm "${config[out]}"
-        log::info "Cleanup finished..."
-    else
-        log::info "Nothing to clean"
-    fi
-}
-
 build::run ()
 {
     declare cmd="${PWD}/${config[out]}"
@@ -136,6 +124,18 @@ build::run ()
         log::info "Run finished successfully"
     else
         log::warn "Run finished with non-zero exit code"
+    fi
+}
+
+build::clean ()
+{
+    log::info "Cleaning up..."
+
+    if [[ -f "${config[out]}" ]]; then
+        rm "${config[out]}"
+        log::info "Cleanup finished..."
+    else
+        log::info "Nothing to clean"
     fi
 }
 
@@ -211,6 +211,17 @@ main::args ()
     done
 }
 
+main::build ()
+{
+    if ${options[run]} || ${options[valgrind]}; then
+        build::run
+    fi
+
+    if ${options[clean]}; then
+        build::clean
+    fi
+}
+
 main::main ()
 {
     main::args "${@}"
@@ -240,6 +251,8 @@ main::main ()
         done
         printf "\n"
     fi
+
+    main::build
 }
 
 main::main "${@}"
