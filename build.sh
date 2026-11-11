@@ -247,6 +247,12 @@ main::build ()
     if ${options[clean]}; then
         build::clean
     fi
+
+    if ${options[watch]};then
+        type -p inotifywait &>/dev/null || log::error "Could not execture 'inotifywait'"
+        log::info "Watching for changes..."
+        inotifywait -e modify "${config[in]}" &>/dev/null || main::build
+    fi
 }
 
 main::main ()
