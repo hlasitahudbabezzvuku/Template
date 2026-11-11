@@ -41,6 +41,7 @@ declare -ra CONF_FLAGS=(
 declare -gA options=(
     ["clean"]=false
     ["config"]=false
+    ["dry"]=false
     ["run"]=false
     ["test"]=false
     ["valgrind"]=false
@@ -241,6 +242,7 @@ main::args ()
 
             '--clean') options[clean]=true;;
             '--config') options[config]=true;;
+            '--dry') options[dry]=true;;
             '--run') options[run]=true;;
             '--test') options[test]=true;;
             '--valgrind') options[valgrind]=true;;
@@ -257,7 +259,9 @@ main::build ()
         build::config
     fi
 
-    build::compile
+    if ! ${options[dry]}; then
+        build::compile
+    fi
 
     if ${options[run]} || ${options[valgrind]}; then
         build::run
