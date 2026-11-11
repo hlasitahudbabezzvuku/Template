@@ -112,10 +112,30 @@ log::trace ()
 
 build::clean ()
 {
+    log::info "Cleaning up..."
+
     if [[ -f "${config[out]}" ]]; then
         rm "${config[out]}"
+        log::info "Cleanup finished..."
     else
         log::info "Nothing to clean"
+    fi
+}
+
+build::run ()
+{
+    declare cmd="${PWD}/${config[out]}"
+
+    if ${options[valgrind]}; then
+        cmd="valgrind ${cmd}"
+    fi
+
+    log::info "Running..."
+
+    if ${cmd}; then
+        log::info "Run finished successfully"
+    else
+        log::warn "Run finished with non-zero exit code"
     fi
 }
 
