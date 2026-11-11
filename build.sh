@@ -38,7 +38,7 @@ declare -ra CONF_FLAGS=(
     "-g"
 )
 
-declare -A options=(
+declare -gA options=(
     ["clean"]=false
     ["config"]=false
     ["run"]=false
@@ -47,7 +47,7 @@ declare -A options=(
     ["watch"]=false
 )
 
-declare -A config=(
+declare -gA config=(
     ["in"]="main.c"
     ["out"]=""
     ["cc"]=""
@@ -206,8 +206,8 @@ main::args ()
                 _="$(( i++ ))"
                 IFS="," read -ra cflags <<< "${!i}"
                 config[cflagsc]="${#cflags[@]}"
-                for (( j = 0; j < config[cflagsc]; j++ )); do
-                    config[cflags,${i}]="${cflags[${i}]}"
+                for (( j = 0; j < "${config[cflagsc]}"; j++ )); do
+                    config[cflags,${j}]="${cflags[${j}]}"
                 done
                 log::info "Using custom CFLAGS"
                 ;;
@@ -215,10 +215,10 @@ main::args ()
             '--cflags-append' | '-A')
                 _="$(( i++ ))"
                 IFS="," read -ra cflags <<< "${!i}"
-                for (( j = 0; j < ${#cflags[@]}; j++ )); do
-                    config[cflags,$(( config[cflagsc] + 1 + i ))]="${cflags[${i}]}"
+                for (( j = 0; j < "${#cflags[@]}"; j++ )); do
+                    config[cflags,$(( config[cflagsc] + j ))]="${cflags[${j}]}"
                 done
-                config[cflagsc]+="${#cflags[@]}"
+                config[cflagsc]=$(( config[cflagsc] + ${#cflags[@]} ))
                 log::info "Appending custom CFLAGS"
                 ;;
 
