@@ -139,9 +139,7 @@ main::args ()
                 exit 0
                 ;;
 
-            '--nocolor')
-                declare -g CONF_NOCOLOR="true"
-                ;;
+            '--nocolor') declare -g CONF_NOCOLOR="true";;
 
             '--in' | '-I')
                 _="$(( i++ ))"
@@ -180,13 +178,15 @@ main::args ()
                 config[cflagsc]+="${#cflags[@]}"
                 log::info "Appending custom CFLAGS"
                 ;;
-            '--'*)
-                # TODO
-                ;;
 
-            *)
-                log::error "Unknown command '${!i}'"
-                ;;
+            '--clean') options[clean]=true;;
+            '--config') options[config]=true;;
+            '--run') options[run]=true;;
+            '--test') options[test]=true;;
+            '--valgrind') options[valgrind]=true;;
+            '--watch') options[watch]=true;;
+
+            *) log::error "Unknown command '${!i}'";;
         esac
     done
 }
