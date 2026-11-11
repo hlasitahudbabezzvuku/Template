@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+
+#    __        _ __   __      __ 
+#   / /  __ __(_) /__/ / ___ / / 
+#  / _ \/ // / / / _  / (_-</ _ \
+# /_.__/\_,_/_/_/\_,_(_)___/_//_/
+
 set -euo pipefail
 export LC_ALL=C
 
@@ -177,12 +183,12 @@ main::args ()
             '--'*)
                 # TODO
                 ;;
+
             *)
                 log::error "Unknown command '${!i}'"
                 ;;
         esac
     done
-
 }
 
 main::main ()
